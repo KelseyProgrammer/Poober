@@ -1,0 +1,30 @@
+{
+    "sourceFile": "server.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 3,
+            "patches": [
+                {
+                    "date": 1741392830091,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1741392846355,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -61,8 +61,4 @@\n app.listen(process.env.PORT, () => {\n   console.log(\"Server is running, you better catch it!\");\n });\n \n-app.use((req, res, next) => {\n-  res.setHeader(\"Access-Control-Allow-Origin\", \"*\"); // Adjust if needed\n-  next();\n-});\n"
+                },
+                {
+                    "date": 1741392993659,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -57,8 +57,7 @@\n app.use(\"/\", mainRoutes);\n app.use(\"/post\", postRoutes);\n \n //Server Running\n-app.listen(process.env.PORT, () => {\n-  console.log(\"Server is running, you better catch it!\");\n-});\n+const PORT = process.env.PORT || 5000;\n+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));\n \n"
+                },
+                {
+                    "date": 1741395067084,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -57,7 +57,7 @@\n app.use(\"/\", mainRoutes);\n app.use(\"/post\", postRoutes);\n \n //Server Running\n-const PORT = process.env.PORT || 5000;\n+const PORT = process.env.PORT || 5001;\n app.listen(PORT, () => console.log(`Server running on port ${PORT}`));\n \n"
+                }
+            ],
+            "date": 1741392830091,
+            "name": "Commit-0",
+            "content": "const express = require(\"express\");\nconst app = express();\nconst mongoose = require(\"mongoose\");\nconst passport = require(\"passport\");\nconst session = require(\"express-session\");\nconst MongoStore = require(\"connect-mongo\")(session);\nconst methodOverride = require(\"method-override\");\nconst flash = require(\"express-flash\");\nconst logger = require(\"morgan\");\nconst connectDB = require(\"./config/database\");\nconst mainRoutes = require(\"./routes/main\");\nconst postRoutes = require(\"./routes/posts\");\n\n//Use .env file in config folder\nrequire(\"dotenv\").config({ path: \"./config/.env\" });\n\n// Passport config\nrequire(\"./config/passport\")(passport);\n\n//Connect To Database\nconnectDB();\n\n//Using EJS for views\napp.set(\"view engine\", \"ejs\");\n\n//Static Folder\napp.use(express.static(\"public\"));\n\n//Body Parsing\napp.use(express.urlencoded({ extended: true }));\napp.use(express.json());\n\n//Logging\napp.use(logger(\"dev\"));\n\n//Use forms for put / delete\napp.use(methodOverride(\"_method\"));\n\n// Setup Sessions - stored in MongoDB\napp.use(\n  session({\n    secret: \"keyboard cat\",\n    resave: false,\n    saveUninitialized: false,\n    store: new MongoStore({ mongooseConnection: mongoose.connection }),\n  })\n);\n\n// Passport middleware\napp.use(passport.initialize());\napp.use(passport.session());\n\n//Use flash messages for errors, info, ect...\napp.use(flash());\n\n//Setup Routes For Which The Server Is Listening\napp.use(\"/\", mainRoutes);\napp.use(\"/post\", postRoutes);\n\n//Server Running\napp.listen(process.env.PORT, () => {\n  console.log(\"Server is running, you better catch it!\");\n});\n\napp.use((req, res, next) => {\n  res.setHeader(\"Access-Control-Allow-Origin\", \"*\"); // Adjust if needed\n  next();\n});\n"
+        }
+    ]
+}

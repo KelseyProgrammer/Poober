@@ -4,10 +4,11 @@ const User = require("../models/User");
 
 module.exports = function (passport) {
   passport.use(
-    new LocalStrategy({ usernameField: "email" }, async (email, password, done) => {
-      try {
-        const users = await User.find({ email: email.toLowerCase() }).limit(1).exec();
-        const user = users[0];
+    new LocalStrategy({ usernameField: "email" }, (email, password, done) => {
+      User.findOne({ email: email.toLowerCase() }, (err, user) => {
+        if (err) {
+          return done(err);
+        }
         if (!user) {
           return done(null, false, { msg: `Email ${email} not found.` });
         }
@@ -26,9 +27,7 @@ module.exports = function (passport) {
           }
           return done(null, false, { msg: "Invalid email or password." });
         });
-      } catch (err) {
-        return done(err);
-      }
+      });
     })
   );
 
@@ -36,13 +35,7 @@ module.exports = function (passport) {
     done(null, user.id);
   });
 
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const users = await User.find({ _id: id }).limit(1).exec();
-      const user = users[0];
-      done(null, user);
-    } catch (err) {
-      done(err, null);
-    }
+  passport.deserializeUser((id, done) => {
+    User.findById(id, (err, user) => done(err, user));
   });
 };

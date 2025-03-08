@@ -58,6 +58,11 @@ app.use("/", mainRoutes);
 app.use("/post", postRoutes);
 
 //Server Running
-const PORT = process.env.PORT || 5001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(process.env.PORT, () => {
+  console.log("Server is running, you better catch it!");
+});
 
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Adjust if needed
+  next();
+});

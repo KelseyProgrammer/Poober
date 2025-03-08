@@ -1,0 +1,18 @@
+{
+    "sourceFile": "config/passport.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1741395294897,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1741395294897,
+            "name": "Commit-0",
+            "content": "const LocalStrategy = require(\"passport-local\").Strategy;\nconst mongoose = require(\"mongoose\");\nconst User = require(\"../models/User\");\n\nmodule.exports = function (passport) {\n  passport.use(\n    new LocalStrategy({ usernameField: \"email\" }, async (email, password, done) => {\n      try {\n        const users = await User.find({ email: email.toLowerCase() }).limit(1).exec();\n        const user = users[0];\n        if (!user) {\n          return done(null, false, { msg: `Email ${email} not found.` });\n        }\n        if (!user.password) {\n          return done(null, false, {\n            msg:\n              \"Your account was registered using a sign-in provider. To enable password login, sign in using a provider, and then set a password under your user profile.\",\n          });\n        }\n        user.comparePassword(password, (err, isMatch) => {\n          if (err) {\n            return done(err);\n          }\n          if (isMatch) {\n            return done(null, user);\n          }\n          return done(null, false, { msg: \"Invalid email or password.\" });\n        });\n      } catch (err) {\n        return done(err);\n      }\n    })\n  );\n\n  passport.serializeUser((user, done) => {\n    done(null, user.id);\n  });\n\n  passport.deserializeUser(async (id, done) => {\n    try {\n      const users = await User.find({ _id: id }).limit(1).exec();\n      const user = users[0];\n      done(null, user);\n    } catch (err) {\n      done(err, null);\n    }\n  });\n};\n"
+        }
+    ]
+}

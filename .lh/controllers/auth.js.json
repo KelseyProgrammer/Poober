@@ -1,0 +1,18 @@
+{
+    "sourceFile": "controllers/auth.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 0,
+            "patches": [
+                {
+                    "date": 1741394997815,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                }
+            ],
+            "date": 1741394997815,
+            "name": "Commit-0",
+            "content": "const passport = require(\"passport\");\nconst validator = require(\"validator\");\nconst User = require(\"../models/User\");\n\nexports.getLogin = (req, res) => {\n  if (req.user) {\n    return res.redirect(\"/profile\");\n  }\n  res.render(\"login\", { title: \"Login\" });\n};\n\nexports.postLogin = async (req, res, next) => {\n  try {\n    const validationErrors = [];\n    if (!validator.isEmail(req.body.email))\n      validationErrors.push({ msg: \"Please enter a valid email address.\" });\n    if (validator.isEmpty(req.body.password))\n      validationErrors.push({ msg: \"Password cannot be blank.\" });\n\n    if (validationErrors.length) {\n      req.flash(\"errors\", validationErrors);\n      return res.redirect(\"/login\");\n    }\n    req.body.email = validator.normalizeEmail(req.body.email, {\n      gmail_remove_dots: false,\n    });\n\n    passport.authenticate(\"local\", async (err, user, info) => {\n      if (err) return next(err);\n      if (!user) {\n        req.flash(\"errors\", info);\n        return res.redirect(\"/login\");\n      }\n      req.logIn(user, (err) => {\n        if (err) return next(err);\n        req.flash(\"success\", { msg: \"Success! You are logged in.\" });\n        res.redirect(req.session.returnTo || \"/profile\");\n      });\n    })(req, res, next);\n  } catch (error) {\n    next(error);\n  }\n};\n\nexports.logout = (req, res) => {\n  req.logout(() => {\n    console.log(\"User has logged out.\");\n  });\n  req.session.destroy((err) => {\n    if (err)\n      console.log(\"Error: Failed to destroy the session during logout.\", err);\n    req.user = null;\n    res.redirect(\"/\");\n  });\n};\n\nexports.getSignup = (req, res) => {\n  if (req.user) {\n    return res.redirect(\"/profile\");\n  }\n  res.render(\"signup\", { title: \"Create Account\" });\n};\n\nexports.postSignup = async (req, res, next) => {\n  try {\n    const validationErrors = [];\n    if (!validator.isEmail(req.body.email))\n      validationErrors.push({ msg: \"Please enter a valid email address.\" });\n    if (!validator.isLength(req.body.password, { min: 8 }))\n      validationErrors.push({ msg: \"Password must be at least 8 characters long\" });\n    if (req.body.password !== req.body.confirmPassword)\n      validationErrors.push({ msg: \"Passwords do not match\" });\n\n    if (validationErrors.length) {\n      req.flash(\"errors\", validationErrors);\n      return res.redirect(\"../signup\");\n    }\n    req.body.email = validator.normalizeEmail(req.body.email, {\n      gmail_remove_dots: false,\n    });\n\n    const existingUser = await User.findOne({\n      $or: [{ email: req.body.email }, { userName: req.body.userName }],\n    });\n\n    if (existingUser) {\n      req.flash(\"errors\", {\n        msg: \"Account with that email address or username already exists.\",\n      });\n      return res.redirect(\"../signup\");\n    }\n\n    const user = new User({\n      userName: req.body.userName,\n      email: req.body.email,\n      password: req.body.password,\n    });\n\n    await user.save();\n    req.logIn(user, (err) => {\n      if (err) return next(err);\n      res.redirect(\"/profile\");\n    });\n  } catch (error) {\n    next(error);\n  }\n};\n"
+        }
+    ]
+}
